@@ -1,146 +1,497 @@
-CREATE DATABASE HOSPITAL;
-GO
+-- ГГ ГЈ 0 Г±Г®Г§Г¤Г Г­ГЁГҐ ГЃГ„
+use [master];
+go
 
-USE HOSPITAL;
-GO
+if db_id('Academy') is not null
+begin
+	drop database [Academy];
+end
+go
 
-CREATE TABLE Departments (
-    Id INT PRIMARY KEY IDENTITY,
-    Building INT NOT NULL CHECK (Building BETWEEN 1 AND 5),
-    Financing MONEY NOT NULL DEFAULT 0,
-    Floor INT NOT NULL CHECK (Floor >= 1),
-    Name NVARCHAR(100) NOT NULL UNIQUE
+create database [Academy];
+go
+
+use [Academy];
+go
+
+create table [Assistants]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[TeacherId] int not null
 );
-GO
+go
 
-CREATE TABLE Diseases (
-    Id INT PRIMARY KEY IDENTITY,
-    Name NVARCHAR(100) NOT NULL UNIQUE,
-    Severity INT NOT NULL DEFAULT 1 CHECK (Severity >= 1)
+create table [Curators]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[TeacherId] int not null
 );
-GO
+go
 
-CREATE TABLE Doctors (
-    Id INT PRIMARY KEY IDENTITY,
-    Name NVARCHAR(MAX) NOT NULL,
-    Phone CHAR(10) NULL,
-    Premium MONEY NOT NULL DEFAULT 0 CHECK (Premium >= 0),
-    Salary MONEY NOT NULL CHECK (Salary > 0),
-    Surname NVARCHAR(MAX) NOT NULL
+create table [Deans]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[TeacherId] int not null
 );
-GO
+go
 
-CREATE TABLE Examinations (
-    Id INT PRIMARY KEY IDENTITY,
-    DayOfWeek INT NOT NULL CHECK (DayOfWeek BETWEEN 1 AND 7),
-    EndTime TIME NOT NULL,
-    Name NVARCHAR(100) NOT NULL UNIQUE,
-    StartTime TIME NOT NULL CHECK (StartTime >= '08:00' AND StartTime <= '18:00')
+create table [Departments]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[Building] int not null check ([Building] between 1 and 5),
+	[Name] nvarchar(100) not null unique check ([Name] <> N''),
+	[FacultyId] int not null,
+	[HeadId] int not null
 );
-GO
+go
 
-CREATE TABLE Wards (
-    Id INT PRIMARY KEY IDENTITY,
-    Building INT NOT NULL CHECK (Building BETWEEN 1 AND 5),
-    Floor INT NOT NULL CHECK (Floor >= 1),
-    Name NVARCHAR(20) NOT NULL UNIQUE
+create table [Faculties]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[Building] int not null check ([Building] between 1 and 5),
+	[Name] nvarchar(100) not null unique check ([Name] <> N''),
+	[DeanId] int not null
 );
-GO
+go
 
--- Таблица Departments
-INSERT INTO Departments (Building, Financing, Floor, Name)
-VALUES (1, 100000, 1, 'Cardiology'),
-       (2, 200000, 2, 'Oncology'),
-       (3, 150000, 1, 'Neurology'),
-       (4, 180000, 3, 'Orthopedics'),
-       (5, 120000, 2, 'Pediatrics'),
-       (1, 90000, 4, 'Dermatology');
+create table [Groups]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[Name] nvarchar(10) not null unique check ([Name] <> N''),
+	[Year] int not null check ([Year] between 1 and 5),
+	[DepartmentId] int not null
+);
+go
 
--- Таблица Diseases
-INSERT INTO Diseases (Name, Severity)
-VALUES ('Cancer', 5),
-       ('Heart Disease', 4),
-       ('Stroke', 3),
-       ('Diabetes', 2),
-       ('Pneumonia', 2),
-       ('Allergies', 1);
+create table [GroupsCurators]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[CuratorId] int not null,
+	[GroupId] int not null
+);
+go
 
--- Таблица Doctors
-INSERT INTO Doctors (Name, Phone, Premium, Salary, Surname)
-VALUES ('Aslan', '1234567890', 5000, 100000, 'Gadzhyyev'),
-       ('Oleksiy', '9876543210', 3000, 90000, 'Berezovskyy'),
-       ('Maksym', '5555555555', 4000, 110000, 'Nazaryshyn'),
-       ('Kristine', NULL, 2000, 80000, 'Cherkezyan'),
-       ('Valeriya', '4444444444', 2500, 95000, 'Prokhorova'),
-       ('Darya', '6666666666', 3500, 95000, 'Ivaskevych');
+create table [GroupsLectures]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[GroupId] int not null,
+	[LectureId] int not null
+);
+go
 
--- Таблица Examinations
-INSERT INTO Examinations (DayOfWeek, EndTime, Name, StartTime)
-VALUES (1, '10:00', 'MRI Scan', '08:00'),
-       (2, '12:00', 'Ultrasound', '09:00'),
-       (3, '14:00', 'X-ray', '10:00'),
-       (4, '16:00', 'Blood Test', '11:00'),
-       (5, '18:00', 'EKG', '12:00'),
-       (6, '15:00', 'CT Scan', '13:00');
+create table [Heads]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[TeacherId] int not null
+);
+go
 
--- Таблица Wards
-INSERT INTO Wards (Building, Floor, Name)
-VALUES (1, 1, 'Ward A'),
-       (2, 2, 'Ward B'),
-       (3, 3, 'Ward C'),
-       (4, 1, 'Ward D'),
-       (5, 2, 'Ward E'),
-       (1, 4, 'Ward F');
+create table [LectureRooms]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[Building] int not null check ([Building] between 1 and 5),
+	[Name] nvarchar(10) not null unique check ([Name] <> N'')
+);
+go
 
-Select *
-From Departments
+create table [Lectures]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[SubjectId] int not null,
+	[TeacherId] int not null
+);
+go
 
-Select *
-From Diseases
+create table [Schedules]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[Class] int not null check ([Class] between 1 and 8),
+	[DayOfWeek] int not null check ([DayOfWeek] between 1 and 7),
+	[Week] int not null check ([Week] between 1 and 52),
+	[LectureId] int not null,
+	[LectureRoomId] int not null
+);
+go
 
-Select *
-From Doctors
+create table [Subjects]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[Name] nvarchar(100) not null unique check ([Name] <> N'')
+);
+go
 
-Select *
-From Examinations
+create table [Teachers]
+(
+	[Id] int not null identity(1, 1) primary key,
+	[Name] nvarchar(max) not null check ([Name] <> N''),
+	[Surname] nvarchar(max) not null check ([Surname] <> N'')
+);
+go
 
-Select *
-From Wards
+alter table [Assistants]
+add foreign key ([TeacherId]) references [Teachers]([Id]);
+go
 
---1. Вывести содержимое таблицы палат.
-SELECT * FROM Wards;
---2. Вывести фамилии и телефоны всех врачей.
-SELECT Surname, Phone FROM Doctors;
---3. Вывести все этажи без повторений, на которых располагаются палаты.
-SELECT DISTINCT Floor FROM Wards;
---4. Вывести названия заболеваний под именем “Name of Disease” и степень их тяжести под именем “Severity of Disease”.
-SELECT Name, Severity AS 'Severity of Disease' FROM Diseases WHERE Name = 'Name of Disease';
---5. Использовать выражение FROM для любых трех таблиц базы данных, используя для них псевдонимы.
-SELECT D.Name, E.Name, W.Name
-FROM Doctors AS D, Examinations AS E, Wards AS W;
---6. Вывести названия отделений, расположенных в корпусе 5 и имеющих фонд финансирования менее 30000.
-SELECT Name FROM Departments WHERE Building = 5 AND Financing < 30000;
---7. Вывести названия отделений, расположенных в 3-м корпусе с фондом финансирования в диапазоне от 12000 до 15000.
-SELECT Name FROM Departments WHERE Building = 3 AND Financing BETWEEN 12000 AND 15000;
---8. Вывести названия палат, расположенных в корпусах 4 и 5 на 1-м этаже.
-SELECT Name FROM Wards WHERE Building IN (4, 5) AND Floor = 1;
---9. Вывести названия, корпуса и фонды финансирования отделений, расположенных в корпусах 3 или 6 и имеющих фонд финансирования меньше 11000 или больше 25000.
-SELECT Name, Building, Financing FROM Departments WHERE (Building = 3 OR Building = 6) AND (Financing < 11000 OR Financing > 25000);
---10. Вывести фамилии врачей, чья зарплата (сумма ставки и надбавки) превышает 1500.
-SELECT Surname FROM Doctors WHERE (Salary + Premium) > 1500;
---11. Вывести фамилии врачей, у которых половина зарплаты превышает троекратную надбавку.
-SELECT Surname FROM Doctors WHERE (Salary / 2) > (3 * Premium);
---12. Вывести названия обследований без повторений, проводимых в первые три дня недели с 12:00 до 15:00. 
-SELECT DISTINCT Name FROM Examinations WHERE DayOfWeek IN (1, 2, 3) AND StartTime >= '12:00' AND EndTime <= '15:00';
---13. Вывести названия и номера корпусов отделений, расположенных в корпусах 1, 3, 8 или 10.
-SELECT D.Name, D.Building
-FROM Departments AS D
-WHERE D.Building IN (1, 3, 8, 10);
---14. Вывести названия заболеваний всех степеней тяжести, кроме 1-й и 2-й.
-SELECT Name FROM Diseases WHERE Severity NOT IN (1, 2);
---15. Вывести названия отделений, которые не располагаются в 1-м или 3-м корпусе.
-SELECT Name FROM Departments WHERE Building NOT IN (1, 3);
---16. Вывести названия отделений, которые располагаются в 1-м или 3-м корпусе.
-SELECT Name FROM Departments WHERE Building IN (1, 3);
---17. Вывести фамилии врачей, начинающиеся на букву “N”.
-SELECT Surname FROM Doctors WHERE Surname LIKE 'N%';
+alter table [Curators]
+add foreign key ([TeacherId]) references [Teachers]([Id]);
+go
+
+alter table [Deans]
+add foreign key ([TeacherId]) references [Teachers]([Id]);
+go
+
+alter table [Departments]
+add foreign key ([FacultyId]) references [Faculties]([Id]);
+go
+
+alter table [Departments]
+add foreign key ([HeadId]) references [Heads]([Id]);
+go
+
+alter table [Faculties]
+add foreign key ([DeanId]) references [Deans]([Id]);
+go
+
+alter table [Groups]
+add foreign key ([DepartmentId]) references [Departments]([Id]);
+go
+
+alter table [GroupsCurators]
+add foreign key ([CuratorId]) references [Curators]([Id]);
+go
+
+alter table [GroupsCurators]
+add foreign key ([GroupId]) references [Groups]([Id]);
+go
+
+alter table [GroupsLectures]
+add foreign key ([GroupId]) references [Groups]([Id]);
+go
+
+alter table [GroupsLectures]
+add foreign key ([LectureId]) references [Lectures]([Id]);
+go
+
+alter table [Heads]
+add foreign key ([TeacherId]) references [Teachers]([Id]);
+go
+
+alter table [Lectures]
+add foreign key ([SubjectId]) references [Subjects]([Id]);
+go
+
+alter table [Lectures]
+add foreign key ([TeacherId]) references [Teachers]([Id]);
+go
+
+alter table [Schedules]
+add foreign key ([LectureId]) references [Lectures]([Id]);
+go
+
+alter table [Schedules]
+add foreign key ([LectureRoomId]) references [LectureRooms]([Id]);
+go
+
+--ГГ ГЈ 1 Г¤Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Г§Г­Г Г·ГҐГ­ГЁГ©
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ ГЇГ°ГҐГЇГ®Г¤Г ГўГ ГІГҐГ«ГҐГ©
+INSERT INTO Teachers (Name, Surname) VALUES
+('Edward', 'Hopper'),
+('Alex', 'Carmack'),
+('John', 'Doe'),
+('Jane', 'Smith'),
+('Emma', 'Stone'),
+('William', 'Turner'),
+('Olivia', 'Brown'),
+('Lucas', 'Davis'),
+('Mia', 'Wilson'),
+('Ethan', 'Miller');
+
+Select * FROM Teachers 
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Г Г±Г±ГЁГ±ГІГҐГ­ГІГ®Гў
+INSERT INTO Assistants (TeacherId) 
+SELECT Id FROM Teachers 
+WHERE Surname IN 
+('Doe', 
+'Smith', 
+'Hopper', 
+'Carmack', 
+'Stone', 
+'Turner', 
+'Brown', 
+'Davis', 
+'Wilson', 
+'Miller');
+
+Select * FROM Assistants
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ ГЄГіГ°Г ГІГ®Г°Г®Гў
+INSERT INTO Curators (TeacherId) 
+SELECT Id FROM Teachers
+WHERE Surname IN 
+('Smith', 
+'Doe', '
+Hopper', 
+'Carmack', 
+'Stone', 
+'Turner', 
+'Brown', 
+'Davis', 
+'Wilson', 
+'Miller');
+
+Select * FROM Curators
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Г¤ГҐГЄГ Г­Г®Гў
+INSERT INTO Deans (TeacherId) 
+SELECT Id FROM Teachers 
+WHERE Surname IN 
+('Smith', 
+'Doe', 
+'Hopper', 
+'Carmack', 
+'Stone', 
+'Turner', 
+'Brown', 
+'Davis', 
+'Wilson', 
+'Miller');
+
+Select * FROM Deans
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Г§Г ГўГҐГ¤ГіГѕГ№ГЁГµ
+INSERT INTO Heads (TeacherId) 
+SELECT Id FROM Teachers 
+WHERE Surname IN 
+('Smith', 
+'Doe', 
+'Hopper', 
+'Carmack', 
+'Stone', 
+'Turner', 
+'Brown', 
+'Davis', 
+'Wilson', 
+'Miller');
+
+
+Select * FROM Heads
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ ГґГ ГЄГіГ«ГјГІГҐГІГ®Гў
+INSERT INTO Faculties (Building, Name, DeanId) VALUES
+(1, 'Arts and Sciences', (SELECT Id FROM Deans WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Hopper'))),
+(2, 'Engineering', (SELECT Id FROM Deans WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Carmack'))),
+(3, 'Business', (SELECT Id FROM Deans WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Doe'))),
+(4, 'Education', (SELECT Id FROM Deans WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Smith'))),
+(1, 'Computer Science', (SELECT Id FROM Deans WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Stone'))),
+(2, 'Humanities', (SELECT Id FROM Deans WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Turner'))),
+(3, 'Law', (SELECT Id FROM Deans WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Brown'))),
+(4, 'Medicine', (SELECT Id FROM Deans WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Davis'))),
+(1, 'Natural Sciences', (SELECT Id FROM Deans WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Wilson'))),
+(2, 'Social Sciences', (SELECT Id FROM Deans WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Miller')));
+
+Select * FROM Faculties
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ ГЄГ ГґГҐГ¤Г°
+INSERT INTO Departments (Building, Name, FacultyId, HeadId) VALUES
+(1, 'Software Development', (SELECT Id FROM Faculties WHERE Name = 'Engineering'), (SELECT Id FROM Heads WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Carmack'))),
+(1, 'Fine Arts', (SELECT Id FROM Faculties WHERE Name = 'Arts and Sciences'), (SELECT Id FROM Heads WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Hopper'))),
+(2, 'Economics', (SELECT Id FROM Faculties WHERE Name = 'Business'), (SELECT Id FROM Heads WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Doe'))),
+(2, 'Education Policy', (SELECT Id FROM Faculties WHERE Name = 'Education'), (SELECT Id FROM Heads WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Smith'))),
+(3, 'Computer Science', (SELECT Id FROM Faculties WHERE Name = 'Engineering'), (SELECT Id FROM Heads WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Carmack'))),
+(3, 'Literature', (SELECT Id FROM Faculties WHERE Name = 'Arts and Sciences'), (SELECT Id FROM Heads WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Hopper'))),
+(4, 'Mathematics', (SELECT Id FROM Faculties WHERE Name = 'Arts and Sciences'), (SELECT Id FROM Heads WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Hopper'))),
+(4, 'Biology', (SELECT Id FROM Faculties WHERE Name = 'Arts and Sciences'), (SELECT Id FROM Heads WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Hopper'))),
+(5, 'Mechanical Engineering', (SELECT Id FROM Faculties WHERE Name = 'Engineering'), (SELECT Id FROM Heads WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Carmack'))),
+(5, 'Electrical Engineering', (SELECT Id FROM Faculties WHERE Name = 'Engineering'), (SELECT Id FROM Heads WHERE TeacherId = (SELECT Id FROM Teachers WHERE Surname = 'Carmack')));
+
+Select * FROM Departments
+
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ ГЈГ°ГіГЇГЇ
+INSERT INTO Groups (Name, Year, DepartmentId) VALUES
+('F506', 2, (SELECT Id FROM Departments WHERE Name = 'Software Development')),
+('A402', 1, (SELECT Id FROM Departments WHERE Name = 'Fine Arts')),
+('E303', 2, (SELECT Id FROM Departments WHERE Name = 'Economics')),
+('Edu102', 2, (SELECT Id FROM Departments WHERE Name = 'Education Policy')),
+('F507', 3, (SELECT Id FROM Departments WHERE Name = 'Software Development')),
+('A403', 3, (SELECT Id FROM Departments WHERE Name = 'Fine Arts')),
+('E304', 4, (SELECT Id FROM Departments WHERE Name = 'Economics')),
+('Edu103', 4, (SELECT Id FROM Departments WHERE Name = 'Education Policy')),
+('F508', 1, (SELECT Id FROM Departments WHERE Name = 'Software Development')),
+('A404', 1, (SELECT Id FROM Departments WHERE Name = 'Fine Arts'));
+
+Select * FROM Groups
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Г ГіГ¤ГЁГІГ®Г°ГЁГ©
+INSERT INTO LectureRooms (Building, Name) VALUES
+(1, 'A102'),
+(2, 'B202'),
+(3, 'C302'),
+(4, 'D402'),
+(5, 'E502'),
+(1, 'A103'),
+(2, 'B203'),
+(3, 'C303'),
+(4, 'D403'),
+(5, 'E503');
+
+SELECT * FROM LectureRooms;
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Г¤ГЁГ±Г¶ГЁГЇГ«ГЁГ­
+INSERT INTO Subjects (Name) VALUES
+('Art History'),
+('World Literature'),
+('Organic Chemistry'),
+('Anatomy'),
+('Software Engineering'),
+('World History'),
+('Physical Education'),
+('Music Theory'),
+('Psychology'),
+('Sociology');
+
+SELECT * FROM Subjects;
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Г«ГҐГЄГ¶ГЁГ©
+INSERT INTO Lectures (SubjectId, TeacherId) VALUES
+((SELECT Id FROM Subjects WHERE Name = 'Art History'), (SELECT Id FROM Teachers WHERE Surname = 'Doe')),
+((SELECT Id FROM Subjects WHERE Name = 'World Literature'), (SELECT Id FROM Teachers WHERE Surname = 'Smith')),
+((SELECT Id FROM Subjects WHERE Name = 'Organic Chemistry'), (SELECT Id FROM Teachers WHERE Surname = 'Hopper')),
+((SELECT Id FROM Subjects WHERE Name = 'Anatomy'), (SELECT Id FROM Teachers WHERE Surname = 'Carmack')),
+((SELECT Id FROM Subjects WHERE Name = 'Software Engineering'), (SELECT Id FROM Teachers WHERE Surname = 'Stone')),
+((SELECT Id FROM Subjects WHERE Name = 'World History'), (SELECT Id FROM Teachers WHERE Surname = 'Turner')),
+((SELECT Id FROM Subjects WHERE Name = 'Physical Education'), (SELECT Id FROM Teachers WHERE Surname = 'Brown')),
+((SELECT Id FROM Subjects WHERE Name = 'Music Theory'), (SELECT Id FROM Teachers WHERE Surname = 'Davis')),
+((SELECT Id FROM Subjects WHERE Name = 'Psychology'), (SELECT Id FROM Teachers WHERE Surname = 'Wilson')),
+((SELECT Id FROM Subjects WHERE Name = 'Sociology'), (SELECT Id FROM Teachers WHERE Surname = 'Miller'));
+
+SELECT * FROM Lectures;
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Г±ГўГїГ§ГЁ Г¬ГҐГ¦Г¤Гі ГЈГ°ГіГЇГЇГ Г¬ГЁ ГЁ Г«ГҐГЄГ¶ГЁГїГ¬ГЁ
+INSERT INTO GroupsLectures (GroupId, LectureId) VALUES
+((SELECT Id FROM Groups WHERE Name = 'F506'), (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Software Engineering'))),
+((SELECT Id FROM Groups WHERE Name = 'A402'), (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Music Theory'))),
+((SELECT Id FROM Groups WHERE Name = 'E303'), (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Psychology'))),
+((SELECT Id FROM Groups WHERE Name = 'Edu102'), (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Physical Education'))),
+((SELECT Id FROM Groups WHERE Name = 'F507'), (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'World History'))),
+((SELECT Id FROM Groups WHERE Name = 'A403'), (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Organic Chemistry'))),
+((SELECT Id FROM Groups WHERE Name = 'E304'), (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'World Literature'))),
+((SELECT Id FROM Groups WHERE Name = 'Edu103'), (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Art History'))),
+((SELECT Id FROM Groups WHERE Name = 'F508'), (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Anatomy'))),
+((SELECT Id FROM Groups WHERE Name = 'A404'), (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Organic Chemistry')));
+
+SELECT * FROM GroupsLectures;
+
+-- Г„Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ Г°Г Г±ГЇГЁГ±Г Г­ГЁГ©
+INSERT INTO Schedules (Class, DayOfWeek, Week, LectureId, LectureRoomId) VALUES
+(1, 1, 1, (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Art History')), (SELECT Id FROM LectureRooms WHERE Name = 'A102')),
+(2, 2, 2, (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'World Literature')), (SELECT Id FROM LectureRooms WHERE Name = 'B202')),
+(3, 3, 3, (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Organic Chemistry')), (SELECT Id FROM LectureRooms WHERE Name = 'C302')),
+(4, 4, 4, (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Anatomy')), (SELECT Id FROM LectureRooms WHERE Name = 'D402')),
+(5, 5, 5, (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Software Engineering')), (SELECT Id FROM LectureRooms WHERE Name = 'E502')),
+(6, 1, 6, (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'World History')), (SELECT Id FROM LectureRooms WHERE Name = 'A103')),
+(7, 2, 7, (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Physical Education')), (SELECT Id FROM LectureRooms WHERE Name = 'B203')),
+(8, 3, 8, (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Music Theory')), (SELECT Id FROM LectureRooms WHERE Name = 'C303')),
+(1, 4, 9, (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Psychology')), (SELECT Id FROM LectureRooms WHERE Name = 'D403')),
+(2, 5, 10, (SELECT Id FROM Lectures WHERE SubjectId = (SELECT Id FROM Subjects WHERE Name = 'Sociology')), (SELECT Id FROM LectureRooms WHERE Name = 'E503'));
+
+SELECT * FROM Schedules;
+
+--ГГЂГѓ 2 Г‡Г ГЇГ°Г®Г±Г»
+--1. Г‚Г»ГўГҐГ±ГІГЁ Г­Г Г§ГўГ Г­ГЁГї Г ГіГ¤ГЁГІГ®Г°ГЁГ©, Гў ГЄГ®ГІГ®Г°Г»Гµ Г·ГЁГІГ ГҐГІ Г«ГҐГЄГ¶ГЁГЁ
+--ГЇГ°ГҐГЇГ®Г¤Г ГўГ ГІГҐГ«Гј В“Edward HopperВ”.
+SELECT lr.Name AS LectureRoomName
+FROM Teachers t
+	JOIN Lectures l ON t.Id = l.TeacherId
+	JOIN Schedules s ON l.Id = s.LectureId
+	JOIN LectureRooms lr ON s.LectureRoomId = lr.Id
+WHERE t.Name = 'Edward' AND t.Surname = 'Hopper';
+
+--2. Г‚Г»ГўГҐГ±ГІГЁ ГґГ Г¬ГЁГ«ГЁГЁ Г Г±Г±ГЁГ±ГІГҐГ­ГІГ®Гў, Г·ГЁГІГ ГѕГ№ГЁГµ Г«ГҐГЄГ¶ГЁГЁ Гў ГЈГ°ГіГЇГЇГҐ
+--В“F505В”.
+SELECT t.Surname AS AssistantSurname
+FROM Assistants a
+	JOIN Teachers t ON a.TeacherId = t.Id
+	JOIN Lectures l ON t.Id = l.TeacherId
+	JOIN GroupsLectures gl ON l.Id = gl.LectureId
+	JOIN Groups g ON gl.GroupId = g.Id
+WHERE g.Name = 'F505';
+
+--3. Г‚Г»ГўГҐГ±ГІГЁ Г¤ГЁГ±Г¶ГЁГЇГ«ГЁГ­Г», ГЄГ®ГІГ®Г°Г»ГҐ Г·ГЁГІГ ГҐГІ ГЇГ°ГҐГЇГ®Г¤Г ГўГ ГІГҐГ«Гј В“Alex
+--CarmackВ” Г¤Г«Гї ГЈГ°ГіГЇГЇ 1-ГЈГ® ГЄГіГ°Г±Г .
+SELECT s.Name AS SubjectName
+FROM Teachers t
+	JOIN Lectures l ON t.Id = l.TeacherId
+	JOIN Subjects s ON l.SubjectId = s.Id
+	JOIN GroupsLectures gl ON l.Id = gl.LectureId
+	JOIN Groups g ON gl.GroupId = g.Id
+WHERE t.Name = 'Alex' AND t.Surname = 'Carmack' AND g.Year = 1;
+
+--4. Г‚Г»ГўГҐГ±ГІГЁ ГґГ Г¬ГЁГ«ГЁГЁ ГЇГ°ГҐГЇГ®Г¤Г ГўГ ГІГҐГ«ГҐГ©, ГЄГ®ГІГ®Г°Г»ГҐ Г­ГҐ Г·ГЁГІГ ГѕГІ
+--Г«ГҐГЄГ¶ГЁГЁ ГЇГ® ГЇГ®Г­ГҐГ¤ГҐГ«ГјГ­ГЁГЄГ Г¬.
+SELECT DISTINCT t.Surname AS TeacherSurname
+FROM Teachers t
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Lectures l
+    JOIN Schedules s ON l.Id = s.LectureId
+    WHERE t.Id = l.TeacherId AND s.DayOfWeek = 1
+);
+
+--5. Г‚Г»ГўГҐГ±ГІГЁ Г­Г Г§ГўГ Г­ГЁГї Г ГіГ¤ГЁГІГ®Г°ГЁГ©, Г± ГіГЄГ Г§Г Г­ГЁГҐГ¬ ГЁГµ ГЄГ®Г°ГЇГіГ±Г®Гў,
+--Гў ГЄГ®ГІГ®Г°Г»Гµ Г­ГҐГІ Г«ГҐГЄГ¶ГЁГ© Гў Г±Г°ГҐГ¤Гі ГўГІГ®Г°Г®Г© Г­ГҐГ¤ГҐГ«ГЁ Г­Г  ГІГ°ГҐГІГјГҐГ©
+--ГЇГ Г°ГҐ.
+SELECT lr.Name AS LectureRoomName, lr.Building AS BuildingNumber
+FROM LectureRooms lr
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Schedules s
+    WHERE s.LectureRoomId = lr.Id AND s.DayOfWeek = 3 AND s.Week = 2 AND s.Class = 3
+);
+
+--6. Г‚Г»ГўГҐГ±ГІГЁ ГЇГ®Г«Г­Г»ГҐ ГЁГ¬ГҐГ­Г  ГЇГ°ГҐГЇГ®Г¤Г ГўГ ГІГҐГ«ГҐГ© ГґГ ГЄГіГ«ГјГІГҐГІГ  В“Computer
+--ScienceВ”, ГЄГ®ГІГ®Г°Г»ГҐ Г­ГҐ ГЄГіГ°ГЁГ°ГіГѕГІ ГЈГ°ГіГЇГЇГ» ГЄГ ГґГҐГ¤Г°Г» В“Software
+--DevelopmentВ”.
+SELECT t.Name, t.Surname
+FROM Teachers t
+	JOIN Departments d ON t.Id = d.HeadId
+	JOIN Faculties f ON d.FacultyId = f.Id
+WHERE f.Name = 'Computer Science' AND NOT EXISTS (
+    SELECT 1
+    FROM Groups g
+    JOIN GroupsCurators gc ON g.Id = gc.GroupId
+    JOIN Curators c ON gc.CuratorId = c.Id
+    WHERE c.TeacherId = t.Id AND g.DepartmentId = (SELECT Id FROM Departments WHERE Name = 'Software Development')
+);
+
+--7. Г‚Г»ГўГҐГ±ГІГЁ Г±ГЇГЁГ±Г®ГЄ Г­Г®Г¬ГҐГ°Г®Гў ГўГ±ГҐГµ ГЄГ®Г°ГЇГіГ±Г®Гў, ГЄГ®ГІГ®Г°Г»ГҐ ГЁГ¬ГҐГѕГІГ±Гї
+--Гў ГІГ ГЎГ«ГЁГ¶Г Гµ ГґГ ГЄГіГ«ГјГІГҐГІГ®Гў, ГЄГ ГґГҐГ¤Г° ГЁ Г ГіГ¤ГЁГІГ®Г°ГЁГ©.
+SELECT DISTINCT Building FROM Faculties
+UNION
+SELECT DISTINCT Building FROM Departments
+UNION
+SELECT DISTINCT Building FROM LectureRooms;
+
+--8. Г‚Г»ГўГҐГ±ГІГЁ ГЇГ®Г«Г­Г»ГҐ ГЁГ¬ГҐГ­Г  ГЇГ°ГҐГЇГ®Г¤Г ГўГ ГІГҐГ«ГҐГ© Гў Г±Г«ГҐГ¤ГіГѕГ№ГҐГ¬ ГЇГ®-
+--Г°ГїГ¤ГЄГҐ: Г¤ГҐГЄГ Г­Г» ГґГ ГЄГіГ«ГјГІГҐГІГ®Гў, Г§Г ГўГҐГ¤ГіГѕГ№ГЁГҐ ГЄГ ГґГҐГ¤Г°Г Г¬ГЁ, ГЇГ°ГҐ-
+--ГЇГ®Г¤Г ГўГ ГІГҐГ«ГЁ, ГЄГіГ°Г ГІГ®Г°Г», Г Г±Г±ГЁГ±ГІГҐГ­ГІГ».
+(SELECT t.Name, t.Surname, 'Dean' AS Role FROM Teachers t JOIN Deans d ON t.Id = d.TeacherId)
+UNION ALL
+(SELECT t.Name, t.Surname, 'Head' AS Role FROM Teachers t JOIN Heads h ON t.Id = h.TeacherId)
+UNION ALL
+(SELECT t.Name, t.Surname, 'Teacher' AS Role FROM Teachers t)
+UNION ALL
+(SELECT t.Name, t.Surname, 'Curator' AS Role FROM Teachers t JOIN Curators c ON t.Id = c.TeacherId)
+UNION ALL
+(SELECT t.Name, t.Surname, 'Assistant' AS Role FROM Teachers t JOIN Assistants a ON t.Id = a.TeacherId)
+ORDER BY Role;
+
+--9. Г‚Г»ГўГҐГ±ГІГЁ Г¤Г­ГЁ Г­ГҐГ¤ГҐГ«ГЁ (ГЎГҐГ§ ГЇГ®ГўГІГ®Г°ГҐГ­ГЁГ©), Гў ГЄГ®ГІГ®Г°Г»ГҐ ГЁГ¬ГҐГѕГІГ±Гї
+--Г§Г Г­ГїГІГЁГї Гў Г ГіГ¤ГЁГІГ®Г°ГЁГїГµ В“A311В” ГЁ В“A104В” ГЄГ®Г°ГЇГіГ±Г  6.
+
+SELECT DISTINCT s.DayOfWeek
+FROM Schedules s
+	JOIN LectureRooms lr ON s.LectureRoomId = lr.Id
+WHERE lr.Name IN ('A311', 'A104') AND lr.Building = 6;
